@@ -11,7 +11,7 @@ const ProductsSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  branch: {
+  brand: {
     type: String,
     required: true,
     trim: true,
@@ -21,14 +21,24 @@ const ProductsSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  secondaryImages: {
+    type: Array,
+    required: false,
+    trim: true,
+  },
   price: {
+    type: Number,
+    required: true,
+    trim: true,
+  },
+  stock: {
     type: Number,
     required: true,
     trim: true,
   },
   purchased: {
     type: Number,
-    required: true,
+    required: false,
     trim: true,
   },
   tags: {
