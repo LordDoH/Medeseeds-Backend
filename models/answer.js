@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const AnswersSchema = new mongoose.Schema({
   content: {
@@ -17,14 +17,14 @@ const AnswersSchema = new mongoose.Schema({
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: false,
   },
   post: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Post",
+    ref: 'Post',
     required: false,
   },
 });
 
-module.exports = mongoose.model("Answer", AnswersSchema);
+module.exports = mongoose.model('Answer', AnswersSchema);

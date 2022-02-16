@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-require("dotenv").config();
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
+require('dotenv').config();
 
 const createToken = (user, secret, expiresIn) => {
   console.log(user);
@@ -25,7 +25,7 @@ const resolvers = {
       // Check if user is registered
       const userExists = await User.findOne({ email });
       if (userExists) {
-        throw new Error("The user is already registered");
+        throw new Error('The user is already registered');
       }
 
       // Save new user
@@ -42,18 +42,18 @@ const resolvers = {
       const { email, password } = input;
       const userExists = await User.findOne({ email });
       if (!userExists) {
-        throw new Error("The user has not registered yet.");
+        throw new Error('The user has not registered yet.');
       }
 
       // Check password
       const isMatch = await userExists.comparePassword(password);
       if (!isMatch) {
-        throw new Error("Wrong password.");
+        throw new Error('Wrong password.');
       }
 
       // Generate Token
       return {
-        token: createToken(userExists, process.env.PALABRA_SECRETA, "24h"),
+        token: createToken(userExists, process.env.PALABRA_SECRETA, '24h'),
       };
     },
   },

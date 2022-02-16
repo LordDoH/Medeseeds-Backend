@@ -1,15 +1,15 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const OrdersSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: false,
   },
   status: {
     type: String,
-    default: "Not paid",
-    enum: ["Not paid", "In process", "Sent", "Finished"],
+    default: 'Not paid',
+    enum: ['Not paid', 'In process', 'Sent', 'Finished'],
     required: true,
   },
   total: {
@@ -28,4 +28,4 @@ const OrdersSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Order", OrdersSchema);
+module.exports = mongoose.model('Order', OrdersSchema);

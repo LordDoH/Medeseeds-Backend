@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const UsersSchema = new mongoose.Schema({
   name: {
@@ -27,7 +27,7 @@ const UsersSchema = new mongoose.Schema({
     type: String,
     required: false,
     default:
-      "https://res.cloudinary.com/zupport/image/upload/v1643327449/autor-desconocido_iubczi.png",
+      'https://res.cloudinary.com/zupport/image/upload/v1643327449/autor-desconocido_iubczi.png',
   },
   prevPurchased: {
     type: Array,
@@ -35,8 +35,8 @@ const UsersSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: "user",
-    enum: ["user", "sales", "admin"], // config.userRoles
+    default: 'user',
+    enum: ['user', 'sales', 'admin'], // config.userRoles
     required: true,
   },
   active: {
@@ -59,7 +59,7 @@ const UsersSchema = new mongoose.Schema({
 UsersSchema.pre("save", async function (next) {
   const user = this;
   try {
-    if (!user.isModified("password")) {
+    if (!user.isModified('password')) {
       return next();
     }
 
@@ -78,4 +78,4 @@ UsersSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, user.password);
 };
 
-module.exports = mongoose.model("User", UsersSchema);
+module.exports = mongoose.model('User', UsersSchema);
