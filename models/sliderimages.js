@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const SlidersSchema = new mongoose.Schema({
-  images: {
-    type: Array,
+  image: {
+    type: String,
     required: true,
     trim: true,
   },

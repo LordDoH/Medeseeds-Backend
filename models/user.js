@@ -29,7 +29,7 @@ const UsersSchema = new mongoose.Schema({
     default:
       'https://res.cloudinary.com/zupport/image/upload/v1643327449/autor-desconocido_iubczi.png',
   },
-  prevPurchased: {
+  orders: {
     type: Array,
     required: false,
   },

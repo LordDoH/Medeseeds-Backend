@@ -11,7 +11,7 @@ const CategoriesSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  branches: {
+  brands: {
     type: Array,
     required: false,
     trim: true,
