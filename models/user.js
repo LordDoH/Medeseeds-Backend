@@ -12,6 +12,16 @@ const UsersSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  address: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  telephone: {
+    type: String,
+    required: false,
+    trim: true,
+  },
   email: {
     type: String,
     required: true,
@@ -36,8 +46,6 @@ const UsersSchema = new mongoose.Schema({
   role: {
     type: String,
     default: 'user',
-    enum: ['user', 'sales', 'admin'], // config.userRoles
-    required: true,
   },
   active: {
     type: Boolean,

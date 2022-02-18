@@ -6,10 +6,13 @@ const typeDefs = gql`
 
   # User
   type User {
+    id: ID
     name: String
     lastName: String
     email: String
     created: String
+    address: String
+    telephone: String
   }
 
   type Token {
@@ -21,13 +24,20 @@ const typeDefs = gql`
   }
 
   type Profile {
+    id: ID
     name: String
     lastName: String
     email: String
     created: String
     photo: String
     orders: [Order]
-    role: String
+    role: Roles
+  }
+
+  enum Roles {
+    user
+    sales
+    admin
   }
 
   # Categories
@@ -62,12 +72,20 @@ const typeDefs = gql`
     product: ID
     quantity: Float
   }
+
   type Order {
     id: ID
     user: ID
-    status: String
+    status: Status
     total: Float
     products: [ProductCart]
+  }
+
+  enum Status {
+    NotPaid
+    InProcess
+    Sent
+    Finished
   }
 
   # Posts
@@ -130,7 +148,9 @@ const typeDefs = gql`
     active: Boolean
     photo: String
     orders: [PurchasedInput]
-    role: String
+    role: Roles
+    address: String
+    telephone: String
   }
 
   input AuthenticateInput {
@@ -153,13 +173,13 @@ const typeDefs = gql`
 
   # Products
   input ProductInput {
-    title: String!
-    description: String!
-    brand: String!
-    image: String!
+    title: String
+    description: String
+    brand: String
+    image: String
     secondaryImages: [String]
-    price: Float!
-    stock: Int!
+    price: Float
+    stock: Int
     tags: [String]
   }
 
@@ -169,7 +189,7 @@ const typeDefs = gql`
     quantity: Float
   }
   input OrderInput {
-    status: String
+    status: Status
     total: Float
     products: [ProductCartInput]
   }
@@ -208,6 +228,7 @@ const typeDefs = gql`
 
   type Query {
     # User
+    getUsers: [User]
     getUserByToken(token: String!): User
     getUser(id: ID!): Profile
 
@@ -217,18 +238,24 @@ const typeDefs = gql`
 
     # Products
     getProducts: [Product]
+    getLatestProducts: [Product]
+    getProductsByCategory(categoryId: ID!): [Product]
     getProduct(id: ID!): Product
 
     # Orders
     getOrders: [Order]
+    getOrdersByUser: [Order]
+    getOrdersByUserEmail(userEmail: String!): [Order]
     getOrder(id: ID!): Order
 
     # Posts
     getPosts: [Post]
+    getPostsByPage(page: Int!): [Post]
     getPost(id: ID!): Post
 
     # Answers
     getAnswers: [Answer]
+    getAnswersByPost(postId: ID!): [Answer]
     getAnswer(id: ID!): Answer
 
     # Brands
@@ -260,17 +287,17 @@ const typeDefs = gql`
     deleteProduct(id: ID!): String
 
     # Orders
-    newOrder(input: OrderInput, userId: ID!): Order
+    newOrder(input: OrderInput, email: String): Order
     updateOrder(id: ID!, input: OrderInput): Order
     deleteOrder(id: ID!): String
 
     # Posts
-    newPost(input: PostInput, userId: ID!): Post
+    newPost(input: PostInput): Post
     updatePost(id: ID!, input: PostInput): Post
     deletePost(id: ID!): String
 
     # Answers
-    newAnswer(input: AnswerInput, userId: ID!, postId: ID!): Answer
+    newAnswer(input: AnswerInput, postId: ID!): Answer
     updateAnswer(id: ID!, input: AnswerInput): Answer
     deleteAnswer(id: ID!): String
 

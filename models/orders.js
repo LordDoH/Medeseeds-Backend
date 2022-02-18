@@ -8,9 +8,7 @@ const OrdersSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: 'Not paid',
-    enum: ['Not paid', 'In process', 'Sent', 'Finished'],
-    required: true,
+    default: 'NotPaid',
   },
   total: {
     type: Number,
