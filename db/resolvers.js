@@ -8,6 +8,7 @@ const Post = require('../models/posts');
 const Answer = require('../models/answer');
 const Brand = require('../models/brands');
 const Slider = require('../models/sliderimages');
+const { payMercadoPago } = require('../utils/payment');
 const { sendEmail } = require('../utils/email');
 require('dotenv').config();
 
@@ -493,6 +494,19 @@ const resolvers = {
       } catch (error) {
         // console.log(error);
       }
+    },
+    newPayment: async (_, { input }) => {
+      const preference = {
+        items: input.products.map((e) => ({
+          title: e.title,
+          quantity: e.quantity,
+          unit_price: e.unit_price,
+        })),
+      };
+
+      const response = await payMercadoPago(preference);
+      console.log('Respuest mercadopago: ', response);
+      return 'Orden creada';
     },
     updateOrder: async (_, { id, input }, ctx) => {
       if (ctx.user.role === 'admin' || ctx.user.role === 'sales') {

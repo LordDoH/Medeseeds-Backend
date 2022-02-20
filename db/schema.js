@@ -72,7 +72,9 @@ const typeDefs = gql`
   # Orders
   type ProductCart {
     product: ID
-    quantity: Float
+    title: String
+    quantity: Int
+    unit_price: Float
   }
 
   type Order {
@@ -193,7 +195,9 @@ const typeDefs = gql`
   # Orders
   input ProductCartInput {
     product: ID
-    quantity: Float
+    title: String
+    quantity: Int
+    unit_price: Float
   }
   input OrderInput {
     status: Status
@@ -298,6 +302,7 @@ const typeDefs = gql`
 
     # Orders
     newOrder(input: OrderInput, email: String): Order
+    newPayment(input: OrderInput): String
     updateOrder(id: ID!, input: OrderInput): Order
     deleteOrder(id: ID!): String
 
