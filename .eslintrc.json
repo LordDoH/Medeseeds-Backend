@@ -20,6 +20,8 @@
         "prettier/prettier" : ["error",{
             "endOfLine": "auto"
             }
-        ]
+        ],
+        "consistent-return": "off",
+        "no-console": "off"
     }
 }

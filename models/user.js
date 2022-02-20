@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const UsersSchema = new mongoose.Schema({
   name: {
@@ -12,6 +12,16 @@ const UsersSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  address: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  telephone: {
+    type: String,
+    required: false,
+    trim: true,
+  },
   email: {
     type: String,
     required: true,
@@ -20,26 +30,24 @@ const UsersSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
   },
   photo: {
     type: String,
     required: false,
     default:
-      "https://res.cloudinary.com/zupport/image/upload/v1643327449/autor-desconocido_iubczi.png",
+      'https://res.cloudinary.com/zupport/image/upload/v1643327449/autor-desconocido_iubczi.png',
   },
-  prevPurchased: {
+  orders: {
     type: Array,
     required: false,
   },
   role: {
     type: String,
-    default: "user",
-    enum: ["user", "sales", "admin"], // config.userRoles
-    required: true,
+    default: 'user',
   },
-  active: {
+  verified: {
     type: Boolean,
     default: false,
   },
@@ -59,7 +67,7 @@ const UsersSchema = new mongoose.Schema({
 UsersSchema.pre("save", async function (next) {
   const user = this;
   try {
-    if (!user.isModified("password")) {
+    if (!user.isModified('password')) {
       return next();
     }
 
@@ -78,4 +86,4 @@ UsersSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, user.password);
 };
 
-module.exports = mongoose.model("User", UsersSchema);
+module.exports = mongoose.model('User', UsersSchema);
