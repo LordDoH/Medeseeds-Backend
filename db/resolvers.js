@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/user');
 const Product = require('../models/products');
 const Category = require('../models/categories');
@@ -7,14 +8,15 @@ const Post = require('../models/posts');
 const Answer = require('../models/answer');
 const Brand = require('../models/brands');
 const Slider = require('../models/sliderimages');
+const { sendEmail } = require('../utils/email');
 require('dotenv').config();
 
 const createToken = (user, secret, expiresIn) => {
   // console.log(user);
 
-  const { id, name, email, role } = user;
+  const { id, name, email, role, photo } = user;
 
-  return jwt.sign({ id, name, email, role }, secret, { expiresIn });
+  return jwt.sign({ id, name, email, role, photo }, secret, { expiresIn });
 };
 
 // Resolvers
@@ -28,6 +30,13 @@ const resolvers = {
     },
     getUser: async (_, { id }) => {
       const user = await User.findById(id);
+      if (!user) {
+        throw new Error('User does not exist');
+      }
+      return user;
+    },
+    getUserByEmail: async (_, { email }) => {
+      const user = await User.findOne({ email });
       if (!user) {
         throw new Error('User does not exist');
       }
@@ -227,8 +236,33 @@ const resolvers = {
 
       // Save new user
       try {
-        const user = new User(input);
+        const newUser = input;
+
+        const hash = crypto
+          .createHash('sha256')
+          .update(newUser.email)
+          .digest('hex');
+
+        newUser.passwordResetToken = hash;
+        newUser.passwordResetExpires = Date.now() + 3600000 * 24;
+        const user = await new User(newUser);
         user.save();
+        const emailVer = {
+          to: user.email, // Change to your recipient
+          from: 'No Reply<medeseeds@gmail.com>', // Change to your verified sender
+          template_id: 'd-becfee670308409992383b11d6f6aa02',
+          dynamic_template_data: {
+            subjecto: `Please activate your account ${user.name}!`,
+            fullname: user.name,
+            username: user.name,
+            urlx: `${
+              process.env.FRONT_HOST || 'http://localhost:3000/'
+            }activate/${hash}`,
+          },
+        };
+
+        sendEmail(emailVer);
+
         return user;
       } catch (error) {
         // console.log(error);
@@ -253,6 +287,24 @@ const resolvers = {
         token: createToken(userExists, process.env.PALABRA_SECRETA, '24h'),
       };
     },
+    authenticateUserVer: async (_, { input }) => {
+      // Check if user exists
+      const { email } = input;
+      const userExists = await User.findOne({ email });
+      if (!userExists) {
+        throw new Error('The user has not registered yet.');
+      }
+      // Check password
+      if (userExists.verified === false) {
+        throw new Error('User has not verified email');
+      }
+
+      // Generate Token
+      return {
+        token: createToken(userExists, process.env.PALABRA_SECRETA, '24h'),
+        verified: userExists.verified,
+      };
+    },
     updateUser: async (_, { id, input }, ctx) => {
       if (ctx.user.id === id || ctx.user.role === 'admin') {
         const user = await User.findById(id);
@@ -265,6 +317,22 @@ const resolvers = {
         return updatedUser;
       }
       throw new Error('Unauthorized');
+    },
+    validateUser: async (_, { input }) => {
+      const { passwordResetToken } = input;
+      const user = await User.findOne({ passwordResetToken });
+      if (!user) {
+        throw new Error('Invalid token');
+      }
+      if (Date.now() > user.passwordResetExpires) {
+        throw new Error('Token expired');
+      }
+      user.verified = true;
+      user.passwordResetToken = null;
+      user.passwordResetExpires = null;
+      await user.save();
+
+      return user;
     },
     // Delete participation in orders, post and answers
     deleteUser: async (_, { id }, ctx) => {

@@ -17,6 +17,7 @@ const typeDefs = gql`
 
   type Token {
     token: String
+    verified: Boolean
   }
 
   type Order {
@@ -28,6 +29,7 @@ const typeDefs = gql`
     name: String
     lastName: String
     email: String
+    verified: Boolean
     created: String
     photo: String
     orders: [Order]
@@ -133,7 +135,10 @@ const typeDefs = gql`
     name: String!
     lastName: String!
     email: String!
-    password: String!
+    password: String
+    photo: String
+    passwordResetToken: String
+    passwordResetExpires: String
   }
 
   input PurchasedInput {
@@ -145,17 +150,19 @@ const typeDefs = gql`
     lastName: String
     email: String
     created: String
-    active: Boolean
+    verified: Boolean
     photo: String
     orders: [PurchasedInput]
     role: Roles
     address: String
     telephone: String
+    passwordResetToken: String
+    passwordResetExpires: String
   }
 
   input AuthenticateInput {
     email: String!
-    password: String!
+    password: String
   }
 
   # Categories
@@ -229,8 +236,9 @@ const typeDefs = gql`
   type Query {
     # User
     getUsers: [User]
-    getUserByToken(token: String!): User
+    getUserByToken(token: String!): Profile
     getUser(id: ID!): Profile
+    getUserByEmail(email: String!): Profile
 
     # Categories
     getCategories: [Category]
@@ -272,9 +280,11 @@ const typeDefs = gql`
   type Mutation {
     # Users
     newUser(input: UserInput): User
+    validateUser(input: ProfileInput): Profile
     updateUser(id: ID!, input: ProfileInput): Profile
     deleteUser(id: ID!): String
     authenticateUser(input: AuthenticateInput): Token
+    authenticateUserVer(input: AuthenticateInput): Token
 
     # Categories
     newCategory(input: CategoryInput): Category

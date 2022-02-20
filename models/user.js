@@ -30,7 +30,7 @@ const UsersSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
   },
   photo: {
@@ -47,7 +47,7 @@ const UsersSchema = new mongoose.Schema({
     type: String,
     default: 'user',
   },
-  active: {
+  verified: {
     type: Boolean,
     default: false,
   },
