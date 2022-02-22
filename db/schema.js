@@ -190,6 +190,7 @@ const typeDefs = gql`
     price: Float
     stock: Int
     tags: [String]
+    category: ID
   }
 
   # Orders
@@ -247,11 +248,12 @@ const typeDefs = gql`
     # Categories
     getCategories: [Category]
     getCategory(id: ID!): Category
+    getCategoryTitleByProduct(id: ID!): String
 
     # Products
     getProducts: [Product]
     getLatestProducts: [Product]
-    getProductsByCategory(categoryId: ID!): [Product]
+    getProductsByCategory(categoryTitle: String): [Product]
     getProduct(id: ID!): Product
 
     # Orders
