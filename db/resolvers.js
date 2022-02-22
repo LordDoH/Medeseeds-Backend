@@ -68,6 +68,14 @@ const resolvers = {
       }
       return category;
     },
+    getCategoryTitleByProduct: async (_, { id }) => {
+      const product = await Product.findById(id);
+      const category = await Category.findOne({ _id: product.category });
+      if (!category) {
+        throw new Error('Category does not exist');
+      }
+      return category.title;
+    },
 
     // Products
     getProducts: async () => {
@@ -86,9 +94,11 @@ const resolvers = {
         // console.log(error);
       }
     },
-    getProductsByCategory: async (_, { categoryId }) => {
+    getProductsByCategory: async (_, { categoryTitle }) => {
       try {
-        const products = await Product.find({ category: categoryId });
+        const category = await Category.findOne({ title: categoryTitle });
+        // eslint-disable-next-line
+        const products = await Product.find({ category: category._id });
         return products;
       } catch (error) {
         // console.log(error);
