@@ -15,9 +15,13 @@ require('dotenv').config();
 const createToken = (user, secret, expiresIn) => {
   // console.log(user);
 
-  const { id, name, email, role, photo } = user;
+  const { id, name, email, role, photo, address, telephone } = user;
 
-  return jwt.sign({ id, name, email, role, photo }, secret, { expiresIn });
+  return jwt.sign(
+    { id, name, email, role, photo, address, telephone },
+    secret,
+    { expiresIn }
+  );
 };
 
 // Resolvers
@@ -123,7 +127,9 @@ const resolvers = {
     },
     getOrdersByUser: async (_, __, ctx) => {
       try {
-        const orders = await Order.find({ user: ctx.user.id });
+        const orders = await Order.find({ user: ctx.user.id }).sort({
+          created: -1,
+        });
         return orders;
       } catch (error) {
         // console.log(error);
@@ -470,11 +476,8 @@ const resolvers = {
       // Check product availability
       // eslint-disable-next-line
       for await (const art of input.products) {
-        console.log(art);
-        const { product } = art;
-        console.log(product);
-        const findProduct = await Product.findById(product);
-        console.log(findProduct);
+        const { productId } = art;
+        const findProduct = await Product.findOne({ _id: productId });
         if (art.quantity > findProduct.stock) {
           throw new Error(`Not enough stock of ${findProduct.title}`);
         }
@@ -489,11 +492,11 @@ const resolvers = {
         // Discount products from stock
         // eslint-disable-next-line
         for await (const art of input.products) {
-          const { product } = art;
-          const findProduct = await Product.findById(product);
+          const { productId } = art;
+          const findProduct = await Product.findOne({ _id: productId });
           const discount = findProduct.stock - art.quantity;
           await Product.findByIdAndUpdate(
-            { _id: product },
+            { _id: productId },
             { stock: discount },
             {
               new: true,
@@ -512,15 +515,32 @@ const resolvers = {
           quantity: e.quantity,
           unit_price: e.unit_price,
         })),
+        back_urls: {
+          success: `${
+            process.env.FRONT_HOST || 'http://localhost:3000/'
+          }orderresume/success`,
+          failure: `${
+            process.env.FRONT_HOST || 'http://localhost:3000/'
+          }orderresume/failed`,
+          pending: `${
+            process.env.FRONT_HOST || 'http://localhost:3000/'
+          }orderresume/pending`,
+        },
       };
 
       const response = await payMercadoPago(preference);
-      console.log('Respuest mercadopago: ', response);
-      return 'Orden creada';
+      console.log('Respuest mercadopago: ', response.body.id);
+      return response.body.id;
     },
     updateOrder: async (_, { id, input }, ctx) => {
-      if (ctx.user.role === 'admin' || ctx.user.role === 'sales') {
-        const order = await Order.findById(id);
+      const order = await Order.findById(id);
+      console.log(order.user.toString());
+      console.log(ctx.user.id);
+      if (
+        ctx.user.role === 'admin' ||
+        ctx.user.role === 'sales' ||
+        ctx.user.id === order.user.toString()
+      ) {
         if (!order) {
           throw new Error('Order does not exist');
         }

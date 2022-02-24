@@ -6,9 +6,29 @@ const OrdersSchema = new mongoose.Schema({
     ref: 'User',
     required: false,
   },
+  mercadoPagoId: {
+    type: String,
+    required: false,
+  },
   status: {
     type: String,
     default: 'NotPaid',
+  },
+  note: {
+    type: String,
+    required: false,
+  },
+  address: {
+    type: String,
+    required: false,
+  },
+  telephone: {
+    type: String,
+    required: false,
+  },
+  image: {
+    type: String,
+    required: false,
   },
   total: {
     type: Number,
