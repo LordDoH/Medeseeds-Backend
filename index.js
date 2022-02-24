@@ -14,7 +14,10 @@ const server = new ApolloServer({
     const token = req.headers.authorization || '';
     if (token) {
       try {
-        const user = jwt.verify(token, process.env.PALABRA_SECRETA);
+        const user = jwt.verify(
+          token.replace('Bearer ', ''),
+          process.env.PALABRA_SECRETA
+        );
         return { user };
       } catch (error) {
         // console.log(error)

@@ -34,6 +34,8 @@ const typeDefs = gql`
     photo: String
     orders: [Order]
     role: Roles
+    address: String
+    telephone: String
   }
 
   enum Roles {
@@ -64,32 +66,42 @@ const typeDefs = gql`
     brand: String
     image: String
     secondaryImages: [String]
-    price: Float
+    price: Int
     stock: Int
     tags: [String]
   }
 
   # Orders
   type ProductCart {
-    product: ID
+    productId: ID
+    brand: String
+    image: String
     title: String
     quantity: Int
-    unit_price: Float
+    unit_price: Int
   }
 
   type Order {
     id: ID
     user: ID
+    mercadoPagoId: String
+    note: String
+    adress: String
+    telephone: String
     status: Status
-    total: Float
+    total: Int
+    image: String
     products: [ProductCart]
+    created: String
   }
 
   enum Status {
     NotPaid
     InProcess
+    Paid
     Sent
     Finished
+    Failed
   }
 
   # Posts
@@ -137,6 +149,7 @@ const typeDefs = gql`
     name: String!
     lastName: String!
     email: String!
+    created: String
     password: String
     photo: String
     passwordResetToken: String
@@ -187,7 +200,7 @@ const typeDefs = gql`
     brand: String
     image: String
     secondaryImages: [String]
-    price: Float
+    price: Int
     stock: Int
     tags: [String]
     category: ID
@@ -195,14 +208,22 @@ const typeDefs = gql`
 
   # Orders
   input ProductCartInput {
-    product: ID
+    productId: String
+    brand: String
+    image: String
     title: String
     quantity: Int
-    unit_price: Float
+    unit_price: Int
   }
   input OrderInput {
+    created: String
+    mercadoPagoId: String
+    image: String
+    note: String
+    address: String
+    telephone: String
     status: Status
-    total: Float
+    total: Int
     products: [ProductCartInput]
   }
 
