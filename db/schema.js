@@ -38,6 +38,10 @@ const typeDefs = gql`
     telephone: String
   }
 
+  type UploadImage {
+    image: String
+  }
+
   enum Roles {
     user
     sales
@@ -171,6 +175,7 @@ const typeDefs = gql`
     role: Roles
     address: String
     telephone: String
+    password: String
     passwordResetToken: String
     passwordResetExpires: String
   }
@@ -265,6 +270,8 @@ const typeDefs = gql`
     getUserByToken(token: String!): Profile
     getUser(id: ID!): Profile
     getUserByEmail(email: String!): Profile
+    # Images
+    _: Boolean
 
     # Categories
     getCategories: [Category]
@@ -274,6 +281,7 @@ const typeDefs = gql`
     # Products
     getProducts: [Product]
     getLatestProducts: [Product]
+    getLikedProducts: [Product]
     getProductsByCategory(categoryTitle: String): [Product]
     getProduct(id: ID!): Product
 
@@ -308,10 +316,13 @@ const typeDefs = gql`
     # Users
     newUser(input: UserInput): User
     validateUser(input: ProfileInput): Profile
-    updateUser(id: ID!, input: ProfileInput): Profile
+    updateUser(id: ID!, input: ProfileInput): Token
     deleteUser(id: ID!): String
     authenticateUser(input: AuthenticateInput): Token
     authenticateUserVer(input: AuthenticateInput): Token
+    # Images
+    uploadPhoto(photo: String): String
+    deletePhoto(photo: String): String
 
     # Categories
     newCategory(input: CategoryInput): Category
@@ -327,6 +338,7 @@ const typeDefs = gql`
     newOrder(input: OrderInput, email: String): Order
     newPayment(input: OrderInput): String
     updateOrder(id: ID!, input: OrderInput): Order
+    updateOrders: [Order]
     deleteOrder(id: ID!): String
 
     # Posts

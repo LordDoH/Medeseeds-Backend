@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const fetch = require('node-fetch');
+const cloudinary = require('cloudinary');
 const User = require('../models/user');
 const Product = require('../models/products');
 const Category = require('../models/categories');
@@ -10,15 +12,16 @@ const Brand = require('../models/brands');
 const Slider = require('../models/sliderimages');
 const { payMercadoPago } = require('../utils/payment');
 const { sendEmail } = require('../utils/email');
+
 require('dotenv').config();
 
 const createToken = (user, secret, expiresIn) => {
   // console.log(user);
 
-  const { id, name, email, role, photo, address, telephone } = user;
+  const { id, name, lastName, email, role, photo, address, telephone } = user;
 
   return jwt.sign(
-    { id, name, email, role, photo, address, telephone },
+    { id, name, lastName, email, role, photo, address, telephone },
     secret,
     { expiresIn }
   );
@@ -93,6 +96,14 @@ const resolvers = {
     getLatestProducts: async () => {
       try {
         const products = await Product.find({}).sort({ created: -1 }).limit(5);
+        return products;
+      } catch (error) {
+        // console.log(error);
+      }
+    },
+    getLikedProducts: async () => {
+      try {
+        const products = await Product.find({}).sort({ stock: -1 }).limit(5);
         return products;
       } catch (error) {
         // console.log(error);
@@ -324,14 +335,20 @@ const resolvers = {
     },
     updateUser: async (_, { id, input }, ctx) => {
       if (ctx.user.id === id || ctx.user.role === 'admin') {
+        const data = input;
+        if (ctx.user.role === 'user') {
+          data.role = 'user';
+        }
         const user = await User.findById(id);
         if (!user) {
           throw new Error('User does not exist');
         }
-        const updatedUser = await User.findByIdAndUpdate({ _id: id }, input, {
+        const updatedUser = await User.findByIdAndUpdate({ _id: id }, data, {
           new: true,
         });
-        return updatedUser;
+        return {
+          token: createToken(updatedUser, process.env.PALABRA_SECRETA, '24h'),
+        };
       }
       throw new Error('Unauthorized');
     },
@@ -372,6 +389,50 @@ const resolvers = {
         return 'User deleted';
       }
       throw new Error('Unauthorized');
+    },
+    // Images
+    uploadPhoto: async (_, { photo }, ctx) => {
+      if (ctx.user.role) {
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+        try {
+          const resulting = await cloudinary.v2.uploader.upload(
+            photo.path,
+            {
+              allowed_formats: ['jpg', 'png'],
+              public_id: '',
+              folder: 'Uploaded-Pictures',
+            },
+            (error, result) => {
+              console.log(result, error);
+            }
+          );
+          return resulting.url;
+        } catch (e) {
+          return `Image could not be uploaded:${e.message}`;
+        }
+      }
+    },
+    deletePhoto: async (_, { photo }, ctx) => {
+      if (ctx.user.role) {
+        const photoid = photo.split('/').pop().split('.')[0];
+        console.log(photoid);
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+        try {
+          await cloudinary.v2.uploader.destroy(photoid, (error, result) => {
+            console.log(result, error);
+          });
+        } catch (e) {
+          return `Image could not be erased:${e.message}`;
+        }
+      }
     },
 
     // Categories
@@ -550,6 +611,45 @@ const resolvers = {
         return updatedOrder;
       }
       throw new Error('Unauthorized');
+    },
+    updateOrders: async (_, __, ctx) => {
+      const orders = await Order.find({ user: ctx.user.id });
+      if (orders) {
+        for (let i = 0; i < orders.length; i += 1) {
+          if (orders[i].status === 'InProcess') {
+            try {
+              console.log(orders[i].mercadoPagoId);
+              fetch(
+                `https://api.mercadopago.com/v1/payments/${orders[i].mercadoPagoId}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+                  },
+                }
+              )
+                .then((res) => res.json())
+                .then(async (json) => {
+                  console.log(json.status, orders[i].id);
+                  if (json.status === 'approved') {
+                    try {
+                      await Order.findOneAndUpdate(
+                        { _id: orders[i].id },
+                        { status: 'Paid' },
+                        { new: true }
+                      );
+                    } catch (e) {
+                      console.log(e);
+                    }
+                  }
+                });
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        }
+      }
+      return orders;
     },
     deleteOrder: async (_, { id }, ctx) => {
       const order = await Order.findById(id);
