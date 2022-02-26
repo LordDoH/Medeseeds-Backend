@@ -482,15 +482,18 @@ const resolvers = {
     },
 
     // Products
-    newProduct: async (_, { input }, ctx) => {
+    newProduct: async (_, { input, title }, ctx) => {
       if (ctx.user.role === 'admin' || ctx.user.role === 'sales') {
+        const category = await Category.findOne({ title });
+        const data = input;
+        data.category = category.id;
         const productExists = await Product.findOne({ title: input.title });
         if (productExists) {
           throw new Error('The product already exists');
         }
         // Save new product
         try {
-          const product = new Product(input);
+          const product = new Product(data);
           const savedProduct = await product.save();
           return savedProduct;
         } catch (error) {

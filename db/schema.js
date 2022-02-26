@@ -330,7 +330,7 @@ const typeDefs = gql`
     deleteCategory(id: ID!): String
 
     # Products
-    newProduct(input: ProductInput): Product
+    newProduct(input: ProductInput, title: String): Product
     updateProduct(id: ID!, input: ProductInput): Product
     deleteProduct(id: ID!): String
 
